@@ -272,6 +272,8 @@ def sentemb_forward(
     )
 
 
+import random
+
 class BertForCL(BertPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"position_ids"]
 
@@ -300,6 +302,16 @@ class BertForCL(BertPreTrainedModel):
         mlm_input_ids=None,
         mlm_labels=None,
     ):
+        # Randomly choose one attention head to ignore
+        num_layers = self.config.num_hidden_layers
+        num_heads = self.config.num_attention_heads
+        layer_to_ignore = random.randint(0, num_layers - 1)
+        head_to_ignore = random.randint(0, num_heads - 1)
+
+        # Create a head mask that ignores one randomly chosen attention head
+        head_mask = torch.ones(num_layers, num_heads)
+        head_mask[layer_to_ignore, head_to_ignore] = 0
+
         if sent_emb:
             return sentemb_forward(self, self.bert,
                 input_ids=input_ids,
@@ -328,6 +340,7 @@ class BertForCL(BertPreTrainedModel):
                 mlm_input_ids=mlm_input_ids,
                 mlm_labels=mlm_labels,
             )
+
 
 
 
